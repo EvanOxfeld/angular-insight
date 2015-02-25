@@ -1,28 +1,13 @@
-function selectController($scope, GroupList){
-
-
-	// this needs integration with list directive, virtual scroll, and search
-
+angular.module('selekt', ['ngSanitize', 'ui.highlight', 'ui.bootstrap'])
+//todo fix group references
+.controller('selektController', ['$scope', function($scope) {
 	$scope.state = {};
 
-	$scope.groups = GroupList.groups;
-	$scope.groups.$promise.then(function(response){
-		$scope.favoriteGroups = [];
-		$scope.recentGroups = [];
-
-		$scope.favoriteGroups.push(response[3]);
-		$scope.favoriteGroups.push(response[6]);
-		$scope.favoriteGroups.push(response[7]);
-
-		$scope.recentGroups.push(response[1]);
-		$scope.recentGroups.push(response[2]);
-		$scope.recentGroups.push(response[8]);
-	});
-
-
 	$scope.preview = false;
-
-	$scope.assignedGroups = [];
+	var data = $scope.selekt.data;
+	$scope.assignedOptions = [];
+	$scope.favoriteGroups = [data[3], data[6], data[7]];
+	$scope.recentGroups = [data[1], data[2], data[8]];
 
 	$scope.addOption = function(item) {
 
@@ -30,9 +15,10 @@ function selectController($scope, GroupList){
 			item.assigned = true;
 			item.selected = false;
 
-			_.each($scope.assignedGroups, function(group){ group.selected = false;});
+			//this is an array
+			_.each($scope.assignedOptions, function(group){ group.selected = false;});
 
-			$scope.assignedGroups.push(item);
+			$scope.assignedOptions.push(item);
 		}
 	};
 
@@ -42,7 +28,7 @@ function selectController($scope, GroupList){
 
 		if (!item.assigned) {
 			item.assigned = true;
-			$scope.assignedGroups.push(item);
+			$scope.assignedOptions.push(item);
 		} else {
 			$scope.removeItem(item);
 		}
@@ -61,7 +47,7 @@ function selectController($scope, GroupList){
 		item.selected = true;
 	};
 
-	$scope.inputPlaceholder = 'Add groups ...';
+	$scope.inputPlaceholder = $scope.selekt.placeholderText;
 
 	$scope.setPlaceholder = function(value){
 		$scope.inputPlaceholder = value;
@@ -92,7 +78,7 @@ function selectController($scope, GroupList){
 		$scope.showOptions = false;
 		$scope.query = '';
 		$scope.focus = false;
-		_.each($scope.groups, function(group){ group.selected = false;});
+		_.each($scope.selekt.data, function(group){ group.selected = false;});
 	};
 
 	$scope.removeItem = function(group) {
@@ -101,17 +87,17 @@ function selectController($scope, GroupList){
 
 		var found, index;
 
-		found =  $scope.assignedGroups.filter(function(obj) {
+		found =  $scope.assignedOptions.filter(function(obj) {
 			return obj._id === group._id;
 		});
 
-		index = $scope.assignedGroups.indexOf(found[0]);
-		$scope.assignedGroups.splice(index,1);
+		index = $scope.assignedOptions.indexOf(found[0]);
+		$scope.assignedOptions.splice(index,1);
 	};
 
-	$scope.groupOptions = {};
+	//$scope.groupOptions = {};
 
-	$scope.groupOptions.displayItems = [
+	/*$scope.groupOptions.displayItems = [
 		{id:0, field:'name', label:'name', fill:true},
 		{id:1, field:'users', label:'users', type:'array-length' },
 		{id:2, field:'status', label:'status' },
@@ -119,12 +105,38 @@ function selectController($scope, GroupList){
 			{label:'Edit'},
 			{label: 'Delete'}
 		]}
-	];
+	];*/
 
 	$scope.inputOptions = "all";
 
-	$scope.groupOptions.actions = [
+	/*$scope.groupOptions.actions = [
 		{label:'Edit', callback: GroupList.get},
 		{label: 'Delete', callback: GroupList.removeGroup}
-	];
-}
+	];*/
+}])
+.directive('selekt', function() {
+	//todo design options, which are required, which have defaults
+	return {
+		restrict: 'A',
+		templateUrl: 'select.html', //todo
+		scope: {
+			selekt: '='
+		},
+		replace: true,
+		controller: 'selektController',
+		compile: function() {
+		}
+	};
+});
+
+/*function selectController($scope, GroupList){
+
+	// this needs integration with list directive, virtual scroll, and search
+
+
+
+
+
+
+
+}*/
